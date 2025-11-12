@@ -1,6 +1,6 @@
 # Sistema de Gestión · Laravel 12 + React
 
-Este repositorio contiene la prueba técnica completada para la posición de **Desarrollador Laravel**. El sistema implementa la gestión integral de productos, clientes, inventario y pedidos usando **Laravel 12** en el backend y **React + Vite** en el frontend.
+El sistema implementa la gestión integral de productos, clientes, inventario y pedidos usando **Laravel 12** en el backend y **React + Vite** en el frontend.
 
 ---
 
@@ -17,7 +17,7 @@ Este repositorio contiene la prueba técnica completada para la posición de **D
 - PHP >= 8.2 con extensiones `pdo`, `pdo_mysql`, `openssl`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`
 - Composer
 - Node.js >= 18 (incluye npm)
-- Servidor MySQL en ejecución (local o remoto)
+- Servidor MySQL
 
 ---
 
@@ -85,7 +85,7 @@ Abre tu navegador en `http://localhost:8000`. El frontend se monta automáticame
 ---
 
 ## Funcionalidades principales
-- **Productos:** alta, edición, eliminación, listado y asignación de categoría.
+- **Productos:** edición, eliminación, listado y asignación de categoría.
 - **Clientes:** gestión completa con validación de correos únicos.
 - **Inventario:** ajuste manual del stock por producto.
 - **Pedidos:** selección de cliente, adición de múltiples productos, cálculo automático de total y descuento de inventario.
@@ -117,5 +117,3 @@ Prueba_Laravel/
 5. Configura el servidor web (Nginx/Apache) apuntando a `public/index.php`.
 
 ---
-
-¡Listo! Con estos pasos puedes instalar, configurar y ejecutar el sistema de gestión basado en Laravel y React.
