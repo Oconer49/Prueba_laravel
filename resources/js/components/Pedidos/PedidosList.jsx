@@ -19,9 +19,11 @@ export default function PedidosList() {
         try {
             setLoading(true);
             const data = await pedidosService.getAll();
+            // console.log('Pedidos obtenidos:', data);
             setPedidos(data);
             setError('');
         } catch (err) {
+            // console.error('Error al obtener pedidos:', err);
             setError(err.message || 'Error al cargar pedidos');
         } finally {
             setLoading(false);
@@ -34,10 +36,13 @@ export default function PedidosList() {
 
     const handleViewDetail = async (pedido) => {
         try {
+            // console.log('Cargando detalle del pedido:', pedido.id);
             const data = await pedidosService.getById(pedido.id);
             setSelectedPedido(data);
             setShowDetail(true);
         } catch (err) {
+            // console.error('Error al cargar detalle:', err);
+            // alert('Error al cargar detalle del peddido'); // typo
             alert(err.message || 'Error al cargar detalle del pedido');
         }
     };

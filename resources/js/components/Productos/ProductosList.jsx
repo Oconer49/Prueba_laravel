@@ -17,9 +17,11 @@ export default function ProductosList() {
         try {
             setLoading(true);
             const data = await productosService.getAll();
+            // console.log('Productos cargados:', data.length);
             setProductos(data);
             setError('');
         } catch (err) {
+            // console.error('Error al cargar productos:', err);
             setError(err.message || 'Error al cargar productos');
         } finally {
             setLoading(false);
@@ -32,6 +34,7 @@ export default function ProductosList() {
     };
 
     const handleEdit = (producto) => {
+        // console.log('Editando producto:', producto.id);
         setEditingProducto(producto);
         setShowModal(true);
     };
@@ -40,9 +43,12 @@ export default function ProductosList() {
         if (!confirm('¿Está seguro de eliminar este producto?')) return;
 
         try {
+            // console.log('Eliminando producto con id:', id);
             await productosService.delete(id);
             loadProductos();
         } catch (err) {
+            // console.error('Error al eliminar producto:', err);
+            // alert('Error al eliminar prodcto'); // typo
             alert(err.message || 'Error al eliminar producto');
         }
     };

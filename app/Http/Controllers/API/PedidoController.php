@@ -14,10 +14,12 @@ class PedidoController extends Controller
 {
     public function index(): JsonResponse
     {
+        // Log::info('Obteniendo lista de pedidos');
         $pedidos = Pedido::with(['cliente', 'detalles.producto'])
             ->orderBy('fecha', 'desc')
             ->orderBy('id', 'desc')
             ->get();
+        // Log::info('Pedidos obtenidos: ' . $pedidos->count());
         return response()->json($pedidos);
     }
 
@@ -25,11 +27,15 @@ class PedidoController extends Controller
     {
         $validated = $request->validated();
         
+        // Log::info('Creando nuevo pedido', $validated);
+        // Usar transaccin para asegurar consistencia de datos
         return DB::transaction(function () use ($validated) {
             $productosData = [];
             $total = 0;
             
+            // Validar stock y calculr totales
             foreach ($validated['productos'] as $item) {
+                // Log::debug('Procesando producto:', $item);
                 $producto = Producto::findOrFail($item['producto_id']);
                 
                 if ($producto->stock < $item['cantidad']) {
@@ -56,7 +62,10 @@ class PedidoController extends Controller
                 'total' => $total,
             ]);
             
+            // Log::info('Pedido creado con ID: ' . $pedido->id);
+            // Crear detalles y descontarr stock
             foreach ($productosData as $item) {
+                // Log::debug('Creando detalle para producto: ' . $item['producto']->id);
                 PedidoDetalle::create([
                     'pedido_id' => $pedido->id,
                     'producto_id' => $item['producto']->id,

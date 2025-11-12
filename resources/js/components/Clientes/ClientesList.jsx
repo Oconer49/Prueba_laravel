@@ -17,6 +17,7 @@ export default function ClientesList() {
         try {
             setLoading(true);
             const data = await clientesService.getAll();
+            // console.log('Clientes cargados:', data.length);
             setClientes(data);
             setError('');
         } catch (err) {

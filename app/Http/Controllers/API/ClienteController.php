@@ -12,13 +12,17 @@ class ClienteController extends Controller
 {
     public function index(): JsonResponse
     {
+        // Log::info('Obteniendo lista de clientes');
         $clientes = Cliente::orderBy('nombre')->get();
+        // Log::info('Clientes obtenidos: ' . $clientes->count());
         return response()->json($clientes);
     }
 
     public function store(StoreClienteRequest $request): JsonResponse
     {
+        // Log::info('Creando nuevo cliente', $request->validated());
         $cliente = Cliente::create($request->validated());
+        // Log::info('Cliente creado con ID: ' . $cliente->id);
         return response()->json($cliente, 201);
     }
 
@@ -35,7 +39,9 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente): JsonResponse
     {
+        // Log::info('Eliminando cliente con ID: ' . $cliente->id);
         $cliente->delete();
+        // Log::info('Cliente eliminado correctamente');
         return response()->json(['message' => 'Cliente eliminado correctamente']);
     }
 }

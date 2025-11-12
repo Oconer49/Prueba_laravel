@@ -16,7 +16,7 @@ El sistema implementa la gestión integral de productos, clientes, inventario y 
 ## Requisitos
 - PHP >= 8.2 con extensiones `pdo`, `pdo_mysql`, `openssl`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`
 - Composer
-- Node.js >= 18 (incluye npm)
+- Node.js >= 20.19 (incluye npm; compatible también con >= 22.12)
 - Servidor MySQL
 
 ---

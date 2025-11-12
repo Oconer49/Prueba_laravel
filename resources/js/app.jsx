@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import ProductosList from './components/Productos/ProductosList';
 import ClientesList from './components/Clientes/ClientesList';
-import InventarioList from './components/Inventario/InventarioList';
 import PedidosList from './components/Pedidos/PedidosList';
 
 function Navigation() {
@@ -34,9 +33,6 @@ function Navigation() {
                             <Link to="/clientes" className={navLinkClass('/clientes')}>
                                 Clientes
                             </Link>
-                            <Link to="/inventario" className={navLinkClass('/inventario')}>
-                                Inventario
-                            </Link>
                             <Link to="/pedidos" className={navLinkClass('/pedidos')}>
                                 Pedidos
                             </Link>
@@ -57,7 +53,6 @@ function App() {
                     <Route path="/" element={<ProductosList />} />
                     <Route path="/productos" element={<ProductosList />} />
                     <Route path="/clientes" element={<ClientesList />} />
-                    <Route path="/inventario" element={<InventarioList />} />
                     <Route path="/pedidos" element={<PedidosList />} />
                 </Routes>
             </div>

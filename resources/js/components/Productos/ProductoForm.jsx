@@ -38,8 +38,10 @@ export default function ProductoForm({ isOpen, onClose, producto, onSave }) {
     const loadCategorias = async () => {
         try {
             const data = await categoriasService.getAll();
+            // console.log('Categorías cargadas:', data);
             setCategorias(data);
         } catch (err) {
+            // console.error('Error al cargar categorías:', err);
             console.error('Error al cargar categorías:', err);
         }
     };
@@ -65,11 +67,13 @@ export default function ProductoForm({ isOpen, onClose, producto, onSave }) {
             newErrors.nombre = 'El nombre es obligatorio';
         }
 
-        if (!formData.precio || parseFloat(formData.precio) < 0) {
+        const precio = parseFloat(formData.precio);
+        if (!formData.precio || precio < 0) {
             newErrors.precio = 'El precio debe ser mayor o igual a 0';
         }
 
-        if (formData.stock === '' || parseInt(formData.stock) < 0) {
+        const stock = parseInt(formData.stock);
+        if (formData.stock === '' || stock < 0) {
             newErrors.stock = 'El stock debe ser mayor o igual a 0';
         }
 
@@ -91,14 +95,19 @@ export default function ProductoForm({ isOpen, onClose, producto, onSave }) {
                 categoria_id: formData.categoria_id || null,
             };
 
+            // console.log('Guardando producto:', data);
             if (producto) {
+                // console.log('Actualizando producto existente');
                 await productosService.update(producto.id, data);
             } else {
+                // console.log('Creando nuevo producto');
                 await productosService.create(data);
             }
 
             onSave();
         } catch (err) {
+            // console.error('Error al guardar:', err);
+            // alert('Error al guardar prodcto'); // typo
             alert(err.message || 'Error al guardar producto');
         } finally {
             setLoading(false);
@@ -107,6 +116,7 @@ export default function ProductoForm({ isOpen, onClose, producto, onSave }) {
 
     if (!isOpen) return null;
 
+    // TODO: considerar usar el componente Modal reutilizable
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">

@@ -12,16 +12,20 @@ class ProductoController extends Controller
 {
     public function index(): JsonResponse
     {
+        // Log::info('Obteniendo lista de productos');
         $productos = Producto::with('categoria')
             ->orderBy('nombre')
             ->get();
+        // Log::info('Productos obtenidos: ' . $productos->count());
         return response()->json($productos);
     }
 
     public function store(StoreProductoRequest $request): JsonResponse
     {
+        // Log::info('Creando nuevo producto', $request->validated());
         $producto = Producto::create($request->validated());
         $producto->load('categoria');
+        // Log::info('Producto creado con ID: ' . $producto->id);
         return response()->json($producto, 201);
     }
 
@@ -40,7 +44,9 @@ class ProductoController extends Controller
 
     public function destroy(Producto $producto): JsonResponse
     {
+        // Log::info('Eliminando producto con ID: ' . $producto->id);
         $producto->delete();
+        // Log::info('Producto eliminado correctamente');
         return response()->json(['message' => 'Producto eliminado correctamente']);
     }
 }

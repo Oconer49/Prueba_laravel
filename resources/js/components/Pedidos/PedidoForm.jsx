@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { pedidosService } from '../../services/pedidosService';
 import { clientesService } from '../../services/clientesService';
 import { productosService } from '../../services/productosService';
+import Modal from '../ui/Modal';
+import { FormField } from '../ui/FormField';
 
 export default function PedidoForm({ isOpen, onClose, onSave }) {
     const [formData, setFormData] = useState({
@@ -32,8 +34,10 @@ export default function PedidoForm({ isOpen, onClose, onSave }) {
     const loadClientes = async () => {
         try {
             const data = await clientesService.getAll();
+            // console.log('Clientes disponibles:', data.length);
             setClientes(data);
         } catch (err) {
+            // console.error('Error al obtener clientes:', err);
             console.error('Error al cargar clientes:', err);
         }
     };
@@ -41,8 +45,10 @@ export default function PedidoForm({ isOpen, onClose, onSave }) {
     const loadProductos = async () => {
         try {
             const data = await productosService.getAll();
+            // console.log('Productos disponibles:', data.length);
             setProductosDisponibles(data);
         } catch (err) {
+            // console.error('Error al obtener productos:', err);
             console.error('Error al cargar productos:', err);
         }
     };
@@ -75,23 +81,25 @@ export default function PedidoForm({ isOpen, onClose, onSave }) {
             return;
         }
 
-        const producto = productosDisponibles.find(p => p.id === parseInt(selectedProducto.producto_id));
-        if (!producto) return;
+        const prod = productosDisponibles.find(p => p.id === parseInt(selectedProducto.producto_id));
+        if (!prod) return;
 
-        if (producto.stock < selectedProducto.cantidad) {
-            alert(`Stock insuficiente. Stock disponible: ${producto.stock}`);
+        if (prod.stock < selectedProducto.cantidad) {
+            alert(`Stock insufciente. Stock disponiblle: ${prod.stock}`);
             return;
         }
 
         if (productos.find(p => p.producto_id === selectedProducto.producto_id)) {
+            // console.log('Producto ya agregado');
             alert('Este producto ya está en el pedido');
             return;
         }
 
+        // console.log('Agregando producto al pedido:', prod.nombre);
         setProductos(prev => [...prev, {
             producto_id: parseInt(selectedProducto.producto_id),
             cantidad: parseInt(selectedProducto.cantidad),
-            producto: producto,
+            producto: prod,
         }]);
 
         setSelectedProducto({ producto_id: '', cantidad: 1 });
@@ -137,9 +145,13 @@ export default function PedidoForm({ isOpen, onClose, onSave }) {
                 })),
             };
 
+            // console.log('Creando pedido con datos:', data);
             await pedidosService.create(data);
+            // console.log('Pedido creado exitosamente');
             onSave();
         } catch (err) {
+            // console.error('Error al crear pedido:', err);
+            // alert('Error al crear peddido'); // typo
             alert(err.message || 'Error al crear pedido');
         } finally {
             setLoading(false);
@@ -147,194 +159,161 @@ export default function PedidoForm({ isOpen, onClose, onSave }) {
     };
 
     const getTotal = () => {
-        return productos.reduce((sum, p) => {
+        const total = productos.reduce((sum, p) => {
             return sum + (parseFloat(p.producto.precio) * p.cantidad);
         }, 0);
+        // console.log('Total calculado:', total);
+        return total;
     };
 
-    if (!isOpen) return null;
+    const formId = 'pedido-form';
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div 
-                    className="fixed inset-0 z-0 transition-opacity bg-gray-500 bg-opacity-75"
-                    onClick={onClose}
-                ></div>
-
-                <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-                    &#8203;
-                </span>
-
-                <div className="relative z-10 inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-medium text-gray-900">Nuevo Pedido</h3>
-                            <button
-                                onClick={onClose}
-                                className="text-gray-400 hover:text-gray-500 focus:outline-none"
-                            >
-                                <span className="sr-only">Cerrar</span>
-                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label htmlFor="cliente_id" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Cliente
-                                </label>
-                                <select
-                                    id="cliente_id"
-                                    name="cliente_id"
-                                    value={formData.cliente_id}
-                                    onChange={handleChange}
-                                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        errors.cliente_id ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                                    required
-                                >
-                                    <option value="">Seleccionar...</option>
-                                    {clientes.map(c => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.nombre}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.cliente_id && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.cliente_id}</p>
-                                )}
-                            </div>
-
-                            <div className="mb-4">
-                                <label htmlFor="fecha" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Fecha
-                                </label>
-                                <input
-                                    type="date"
-                                    id="fecha"
-                                    name="fecha"
-                                    value={formData.fecha}
-                                    onChange={handleChange}
-                                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        errors.fecha ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                                    required
-                                />
-                                {errors.fecha && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.fecha}</p>
-                                )}
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Agregar Productos
-                                </label>
-                                <div className="flex gap-2">
-                                    <select
-                                        name="producto_id"
-                                        value={selectedProducto.producto_id}
-                                        onChange={handleProductoChange}
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    >
-                                        <option value="">Seleccionar...</option>
-                                        {productosDisponibles
-                                            .filter(p => p.stock > 0 && !productos.find(prod => prod.producto_id === p.id))
-                                            .map(p => (
-                                                <option key={p.id} value={p.id}>
-                                                    {p.nombre} (Stock: {p.stock})
-                                                </option>
-                                            ))}
-                                    </select>
-                                    <input
-                                        name="cantidad"
-                                        type="number"
-                                        min="1"
-                                        value={selectedProducto.cantidad}
-                                        onChange={handleProductoChange}
-                                        className="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                    <button 
-                                        type="button" 
-                                        onClick={handleAddProducto}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    >
-                                        Agregar
-                                    </button>
-                                </div>
-                            </div>
-
-                            {productos.length > 0 && (
-                                <div className="mb-4">
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50">
-                                                <tr>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Unit.</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
-                                                {productos.map((item, index) => (
-                                                    <tr key={index}>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                            {item.producto.nombre}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {item.cantidad}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            ${parseFloat(item.producto.precio).toFixed(2)}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                            ${(parseFloat(item.producto.precio) * item.cantidad).toFixed(2)}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleRemoveProducto(index)}
-                                                                className="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                                            >
-                                                                Eliminar
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div className="mt-4 text-right">
-                                        <span className="text-lg font-bold text-gray-900">
-                                            Total: ${getTotal().toFixed(2)}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="flex justify-end gap-2 mt-6">
-                                <button 
-                                    type="button" 
-                                    onClick={onClose}
-                                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                >
-                                    Cancelar
-                                </button>
-                                <button 
-                                    type="submit" 
-                                    disabled={loading || productos.length === 0}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                >
-                                    {loading ? 'Guardando...' : 'Crear Pedido'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+        <Modal
+            isOpen={isOpen}
+            title="Nuevo Pedido"
+            onClose={onClose}
+            size="lg"
+            footer={
+                <div className="flex justify-end gap-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        form={formId}
+                        disabled={loading || productos.length === 0}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                        {loading ? 'Guardando...' : 'Crear Pedido'}
+                    </button>
                 </div>
-            </div>
-        </div>
+            }
+        >
+            <form id={formId} onSubmit={handleSubmit}>
+                <FormField label="Cliente" htmlFor="cliente_id" error={errors.cliente_id}>
+                    <select
+                        id="cliente_id"
+                        name="cliente_id"
+                        value={formData.cliente_id}
+                        onChange={handleChange}
+                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            errors.cliente_id ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        required
+                    >
+                        <option value="">Seleccionar...</option>
+                        {clientes.map(c => (
+                            <option key={c.id} value={c.id}>
+                                {c.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </FormField>
+
+                <FormField label="Fecha" htmlFor="fecha" error={errors.fecha}>
+                    <input
+                        type="date"
+                        id="fecha"
+                        name="fecha"
+                        value={formData.fecha}
+                        onChange={handleChange}
+                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            errors.fecha ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        required
+                    />
+                </FormField>
+
+                <FormField label="Agregar Productos" className="mb-6">
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                        <select
+                            name="producto_id"
+                            value={selectedProducto.producto_id}
+                            onChange={handleProductoChange}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Seleccionar...</option>
+                            {productosDisponibles
+                                .filter(p => p.stock > 0 && !productos.find(prod => prod.producto_id === p.id))
+                                .map(p => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.nombre} (Stock: {p.stock})
+                                    </option>
+                                ))}
+                        </select>
+                        <input
+                            type="number"
+                            name="cantidad"
+                            min="1"
+                            value={selectedProducto.cantidad}
+                            onChange={handleProductoChange}
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <button
+                            type="button"
+                            onClick={handleAddProducto}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            Agregar
+                        </button>
+                    </div>
+                </FormField>
+
+                {productos.length > 0 && (
+                    <div className="mb-4">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Unit.</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {productos.map((item, index) => (
+                                        <tr key={index}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {item.producto.nombre}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {item.cantidad}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                ${parseFloat(item.producto.precio).toFixed(2)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                                ${(parseFloat(item.producto.precio) * item.cantidad).toFixed(2)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveProducto(index)}
+                                                    className="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="mt-4 text-right">
+                            <span className="text-lg font-bold text-gray-900">
+                                Total: ${getTotal().toFixed(2)}
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </form>
+        </Modal>
     );
 }
